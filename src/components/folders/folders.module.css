@@ -1,0 +1,7 @@
+.container {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: var(--spacing);
+  padding-left: var(--spacing);
+  border-left: 1px solid var(--border-color);
+}
