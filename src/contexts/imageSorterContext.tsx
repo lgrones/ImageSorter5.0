@@ -6,16 +6,22 @@ import {
   useEffectEvent,
   useState,
 } from "react";
-import { invoke } from "@tauri-apps/api/core";
 import { PathSelector } from "../components/pathSelector/pathSelector";
 import { Target, useImageSorterState } from "./imageSorterReducer";
+import {
+  loadConfig,
+  moveFiles,
+  readImages,
+  readTargets,
+  saveConfig,
+} from "./operations";
+import {
+  handleControlKeys,
+  handleGlobalKeys,
+  handleSearchKeys,
+} from "./keyHandlers";
 
-interface AppConfig {
-  image_folder: string | null;
-  target_folder: string | null;
-}
-
-const config = await invoke<AppConfig>("load_config");
+const config = await loadConfig();
 
 interface ImageSorterValues {
   index: number;
@@ -23,6 +29,7 @@ interface ImageSorterValues {
   prev: () => void;
   next: () => void;
   toggleSelect: () => void;
+  move: (path: string) => void;
   total: number;
   imagePath: string;
   targets: Target[];
@@ -46,97 +53,35 @@ export const ImageSorterProvider = ({ children }: PropsWithChildren) => {
     config.target_folder ?? ""
   );
 
-  const handleKeyDown = useEffectEvent((e: KeyboardEvent) => {
-    if (e.ctrlKey || e.metaKey || e.altKey) return;
+  const paths = state.selected.size
+    ? state.paths.filter((_, i) => state.selected.has(i))
+    : [state.paths[state.index]];
 
-    if (e.key === "ArrowDown" || e.key === "ArrowUp" || e.key === "Enter") {
-      e.preventDefault();
+  const handleKeyDown = useEffectEvent(async (e: KeyboardEvent) => {
+    if (handleGlobalKeys(e)) return;
 
-      const folders = document.getElementById("folders") as HTMLDivElement;
+    if (await handleControlKeys(e, dispatch, paths)) return;
 
-      let activeItem: HTMLButtonElement | null = null;
-
-      if (folders.contains(document.activeElement)) {
-        activeItem = document.activeElement as HTMLButtonElement;
-      }
-
-      switch (e.key) {
-        case "ArrowDown":
-          (
-            (activeItem?.nextElementSibling as HTMLButtonElement | null) ??
-            (folders.firstElementChild as HTMLButtonElement | null)
-          )?.focus();
-          break;
-        case "ArrowUp":
-          (
-            (activeItem?.previousElementSibling as HTMLButtonElement | null) ??
-            (folders.lastElementChild as HTMLButtonElement | null)
-          )?.focus();
-          break;
-        case "ArrowUp":
-          activeItem?.click();
-          break;
-      }
-
-      return;
-    }
-
-    const searchInput = document.getElementById(
-      "folder-search"
-    ) as HTMLInputElement;
-
-    if (document.activeElement?.id !== "folder-search") {
-      switch (e.key) {
-        case "ArrowLeft":
-          dispatch({ type: "prev" });
-          return;
-        case "ArrowRight":
-          dispatch({ type: "next" });
-          return;
-        case " ":
-          e.preventDefault();
-          dispatch({ type: "toggleSelect" });
-          return;
-      }
-
-      searchInput?.focus();
-      searchInput.select();
-    }
-
-    if (e.key === "Escape") {
-      e.preventDefault();
-      searchInput?.blur();
-    }
+    handleSearchKeys(e);
   });
 
   useEffect(() => {
     loadImages(imageFolderPath);
     loadTargets(targetFolderPath);
+
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
-
-  const saveConfig = (imageFolderPath: string, targetFolderPath: string) =>
-    invoke("save_config", {
-      config: {
-        image_folder: imageFolderPath,
-        target_folder: targetFolderPath,
-      },
-    });
 
   const loadImages = async (imageFolderPath: string) => {
     if (!imageFolderPath) return;
 
     setImageFolderPath(imageFolderPath);
-
     dispatch({ type: "reset" });
 
-    const payload = await invoke<string[]>("read_images_from_folder", {
-      folder: imageFolderPath,
-    });
+    const payload = await readImages(imageFolderPath);
 
     dispatch({ type: "setPaths", payload });
-
     saveConfig(imageFolderPath, targetFolderPath);
   };
 
@@ -145,13 +90,18 @@ export const ImageSorterProvider = ({ children }: PropsWithChildren) => {
 
     setTargetFolderPath(targetFolderPath);
 
-    const payload = await invoke<Target[]>("read_targets_from_folder", {
-      folder: targetFolderPath,
-    });
+    const payload = await readTargets(targetFolderPath);
 
     dispatch({ type: "setTargets", payload });
-
     saveConfig(imageFolderPath, targetFolderPath);
+  };
+
+  const move = async (targetFolderPath: string) => {
+    if (!targetFolderPath) return;
+
+    await moveFiles(paths, targetFolderPath);
+
+    dispatch({ type: "remove", payload: paths });
   };
 
   if (!state.initialized) return "Loading";
@@ -166,6 +116,7 @@ export const ImageSorterProvider = ({ children }: PropsWithChildren) => {
         setTargetFolderPath: loadTargets,
         total: state.paths.length,
         imagePath: state.paths[state.index],
+        move,
         prev: () => dispatch({ type: "prev" }),
         next: () => dispatch({ type: "next" }),
         toggleSelect: () => dispatch({ type: "toggleSelect" }),

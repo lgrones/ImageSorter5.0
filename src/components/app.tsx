@@ -1,7 +1,7 @@
 import classes from "./app.module.css";
-import { Folders } from "./components/folders/folders";
-import { ImageView } from "./components/imageView/imageView";
-import { ImageSorterProvider } from "./contexts/imageSorterContext";
+import { Folders } from "./folders/folders";
+import { ImageView } from "./imageView/imageView";
+import { ImageSorterProvider } from "../contexts/imageSorterContext";
 
 export const App = () => {
   return (

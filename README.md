@@ -1,6 +1,6 @@
 # Image Sorter 5.0
 
-This is the fifth iteration for an app helping me sort images I yoinked from the internet into folders.
+This is the fifth iteration of an app helping me sort images I yoinked from the internet into folders.
 
 Cross platform and keyboard-first. (Only tested on fedora 42 though)
 

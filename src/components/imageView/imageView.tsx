@@ -16,10 +16,23 @@ export const ImageView = () => {
     setImageFolderPath,
   } = useImageSorter();
 
+  const type = imagePath.substring(imagePath.lastIndexOf(".") + 1);
+
   return (
     <div className={classes.container} data-selected={selected.has(index)}>
       <div>
-        <img src={convertFileSrc(imagePath)} alt="current" />
+        {["mp4", "webm"].includes(type) ? (
+          <video
+            width="320"
+            height="240"
+            controls
+            loop
+            playsInline
+            src={convertFileSrc(imagePath)}
+          />
+        ) : (
+          <img src={convertFileSrc(imagePath)} alt="current" />
+        )}
       </div>
 
       <div className={classes.info}>

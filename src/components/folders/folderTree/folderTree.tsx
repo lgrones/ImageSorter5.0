@@ -1,6 +1,7 @@
 import { memo, useDeferredValue } from "react";
 import { Target } from "../../../contexts/imageSorterReducer";
 import classes from "./folderTree.module.css";
+import { useImageSorter } from "../../../contexts/imageSorterContext";
 
 interface FolderTreeProps {
   targets: Target[];
@@ -21,8 +22,10 @@ interface FoldersProps {
 }
 
 const Folders = memo(({ targets }: FoldersProps) => {
+  const { move } = useImageSorter();
+
   return targets.map((x) => (
-    <button key={x.path} className={classes.item}>
+    <button key={x.path} className={classes.item} onClick={() => move(x.path)}>
       <span>{x.name}</span>
       <span dir="rtl" title={x.path}>
         {x.path

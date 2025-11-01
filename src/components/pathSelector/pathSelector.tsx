@@ -15,6 +15,7 @@ export const PathSelector = ({
     const selected = await open({
       directory: true,
       multiple: false,
+      defaultPath: folderPath,
       title,
     });
 

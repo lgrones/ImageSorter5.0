@@ -13,13 +13,15 @@ interface State {
   targets: Target[];
 }
 
-type Action =
+export type Action =
   | { type: "reset" }
   | { type: "setPaths"; payload: string[] }
   | { type: "setTargets"; payload: Target[] }
   | { type: "toggleSelect" }
   | { type: "next" }
-  | { type: "prev" };
+  | { type: "prev" }
+  | { type: "remove"; payload: string[] }
+  | { type: "add"; payload: string[] };
 
 export const initialState: State = {
   initialized: false,
@@ -46,6 +48,22 @@ const reducer = (state: State, action: Action): State => {
         ...state,
         targets: action.payload,
         initialized: true,
+      };
+
+    case "remove":
+      return {
+        ...state,
+        paths: state.paths.filter((x) => !action.payload.includes(x)),
+        index: 0,
+        selected: new Set(),
+      };
+
+    case "add":
+      return {
+        ...state,
+        paths: [...state.paths, ...action.payload],
+        index: 0,
+        selected: new Set(),
       };
 
     case "toggleSelect": {
