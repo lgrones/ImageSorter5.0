@@ -9,3 +9,4 @@ Cross platform and keyboard-first. (Only tested on fedora 42 though)
 > WEBKIT_DISABLE_DMABUF_RENDERER=1 pnpm tauri dev
 
 ![sample](sample.png)
+[Image by 0DayHX on Pixiv](https://www.pixiv.net/en/artworks/131069712)
