@@ -4,7 +4,17 @@ import classes from "./imageView.module.css";
 import { PathSelector } from "../pathSelector/pathSelector";
 
 export const ImageView = () => {
-  const { index, selected, total, imagePath } = useImageSorter();
+  const {
+    index,
+    selected,
+    prev,
+    next,
+    toggleSelect,
+    total,
+    imagePath,
+    imageFolderPath,
+    setImageFolderPath,
+  } = useImageSorter();
 
   return (
     <div className={classes.container} data-selected={selected.has(index)}>
@@ -14,30 +24,30 @@ export const ImageView = () => {
 
       <div className={classes.info}>
         <div>
-          <span>
-            {index + 1} / {total}
-          </span>
-
-          <span>{selected.size} selected</span>
+          {index + 1} / {total} &nbsp;•&nbsp; {selected.size} selected
         </div>
 
         <div className={classes.controls}>
-          <div>
-            <kbd>&larr;</kbd>
+          <button onClick={prev}>
             <span>Prev</span>
-          </div>
-          <div>
-            <kbd>_</kbd>
+            <kbd>&larr;</kbd>
+          </button>
+          <button onClick={toggleSelect}>
             <span>Select</span>
-          </div>
-          <div>
-            <kbd>&rarr;</kbd>
+            <kbd>_</kbd>
+          </button>
+          <button onClick={next}>
             <span>Next</span>
-          </div>
+            <kbd>&rarr;</kbd>
+          </button>
         </div>
 
         <div>
-          <PathSelector />
+          <PathSelector
+            title="Select an image folder"
+            folderPath={imageFolderPath}
+            setFolderPath={setImageFolderPath}
+          />
         </div>
       </div>
     </div>

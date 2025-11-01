@@ -1,1 +1,44 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow: scroll;
+}
 
+.item {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--spacing);
+  background-color: transparent;
+  border: 1px solid transparent;
+
+  &:focus {
+    background-color: var(--foreground-color);
+    border: 1px solid var(--border-color);
+    outline: none;
+    position: relative;
+
+    &::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 2px;
+      background-color: var(--primary);
+    }
+  }
+
+  span {
+    white-space: nowrap;
+    word-wrap: break-word;
+    word-break: break-word;
+  }
+
+  span:last-of-type {
+    color: var(--dimmed);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 40%;
+  }
+}

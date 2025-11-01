@@ -1,15 +1,22 @@
 import { useReducer } from "react";
 
+export interface Target {
+  name: string;
+  path: string;
+}
+
 interface State {
   initialized: boolean;
   index: number;
   selected: Set<number>;
   paths: string[];
+  targets: Target[];
 }
 
 type Action =
   | { type: "reset" }
   | { type: "setPaths"; payload: string[] }
+  | { type: "setTargets"; payload: Target[] }
   | { type: "toggleSelect" }
   | { type: "next" }
   | { type: "prev" };
@@ -19,20 +26,26 @@ export const initialState: State = {
   index: 0,
   selected: new Set(),
   paths: [],
+  targets: [],
 };
 
 const reducer = (state: State, action: Action): State => {
   switch (action.type) {
     case "reset":
-      return initialState;
+      return { ...state, initialized: false, index: 0, selected: new Set() };
 
     case "setPaths":
       return {
         ...state,
         paths: action.payload,
         initialized: true,
-        index: 0,
-        selected: new Set(),
+      };
+
+    case "setTargets":
+      return {
+        ...state,
+        targets: action.payload,
+        initialized: true,
       };
 
     case "toggleSelect": {

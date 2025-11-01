@@ -1,9 +1,13 @@
-# Tauri + React + Typescript
+# Image Sorter 5.0
 
-This template should help get you started developing with Tauri, React and Typescript in Vite.
+This is the fifth iteration for an app helping me sort images I yoinked from the internet into folders.
 
-## Recommended IDE Setup
+Cross platform and keyboard-first. (Only tested on fedora 42 though)
 
-- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+### Running on Linux might require
 
-WEBKIT_DISABLE_DMABUF_RENDERER=1 pnpm tauri dev
+> WEBKIT_DISABLE_DMABUF_RENDERER=1 pnpm tauri dev
+
+---
+
+![sample](sample.png)
