@@ -4,8 +4,11 @@ mod commands;
 mod config;
 mod folders;
 mod operations;
+mod protocol;
 
 use commands::history::History;
+
+use crate::protocol::handle_fs_protocol;
 
 pub fn run() {
     let history = Arc::new(Mutex::new(History::new()));
@@ -23,6 +26,7 @@ pub fn run() {
             operations::move_files,
             operations::delete_files
         ])
+        .register_uri_scheme_protocol("fs", |_, request| handle_fs_protocol(request))
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

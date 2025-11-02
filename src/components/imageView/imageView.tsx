@@ -26,9 +26,13 @@ export const ImageView = () => {
         {currentImagePath ? (
           <>
             {isVideo ? (
-              <video controls loop src={convertFileSrc(currentImagePath)} />
+              <video
+                controls
+                loop
+                src={convertFileSrc(currentImagePath, "fs")}
+              />
             ) : (
-              <img src={convertFileSrc(currentImagePath)} alt="current" />
+              <img src={convertFileSrc(currentImagePath, "fs")} alt="current" />
             )}
           </>
         ) : (
