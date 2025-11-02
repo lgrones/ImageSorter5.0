@@ -1,9 +1,9 @@
 import { invoke } from "@tauri-apps/api/core";
-import { Target } from "./imageSorterReducer";
+import { Target } from "../contexts/imageSorterReducer";
 
 interface AppConfig {
-  image_folder: string | null;
-  target_folder: string | null;
+  imageFolderPath: string | null;
+  targetFolderPath: string | null;
 }
 
 export const saveConfig = async (
@@ -17,14 +17,24 @@ export const saveConfig = async (
     },
   });
 
-export const loadConfig = async () => await invoke<AppConfig>("load_config");
+export const loadConfig = async (): Promise<AppConfig> => {
+  const config = await invoke<{
+    image_folder: string | null;
+    target_folder: string | null;
+  }>("load_config");
 
-export const readImages = async (imageFolderPath: string) =>
+  return {
+    imageFolderPath: config.image_folder,
+    targetFolderPath: config.target_folder,
+  };
+};
+
+export const readImagePaths = async (imageFolderPath: string) =>
   await invoke<string[]>("read_images_from_folder", {
     folder: imageFolderPath,
   });
 
-export const readTargets = async (targetFolderPath: string) =>
+export const readTargetPaths = async (targetFolderPath: string) =>
   await invoke<Target[]>("read_targets_from_folder", {
     folder: targetFolderPath,
   });

@@ -19,7 +19,7 @@ export const PathSelector = ({
       title,
     });
 
-    if (typeof selected !== "string") return;
+    if (typeof selected !== "string" || !selected) return;
 
     setFolderPath(selected);
   };

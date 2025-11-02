@@ -42,3 +42,8 @@
     max-width: 40%;
   }
 }
+
+.empty {
+  color: var(--dimmed);
+  margin: auto;
+}

@@ -5,39 +5,41 @@ import { PathSelector } from "../pathSelector/pathSelector";
 
 export const ImageView = () => {
   const {
-    index,
-    selected,
+    currentIndex,
+    selectedImagePaths,
+    totalImages,
+    currentImagePath,
+    isVideo,
     prev,
     next,
     toggleSelect,
-    total,
-    imagePath,
     imageFolderPath,
     setImageFolderPath,
   } = useImageSorter();
 
-  const type = imagePath.substring(imagePath.lastIndexOf(".") + 1);
-
   return (
-    <div className={classes.container} data-selected={selected.has(index)}>
+    <div
+      className={classes.container}
+      data-selected={selectedImagePaths.has(currentImagePath ?? "")}
+    >
       <div>
-        {["mp4", "webm"].includes(type) ? (
-          <video
-            width="320"
-            height="240"
-            controls
-            loop
-            playsInline
-            src={convertFileSrc(imagePath)}
-          />
+        {currentImagePath ? (
+          <>
+            {isVideo ? (
+              <video controls loop src={convertFileSrc(currentImagePath)} />
+            ) : (
+              <img src={convertFileSrc(currentImagePath)} alt="current" />
+            )}
+          </>
         ) : (
-          <img src={convertFileSrc(imagePath)} alt="current" />
+          <span style={{ color: "var(--dimmed)" }}>No images found</span>
         )}
       </div>
 
       <div className={classes.info}>
         <div>
-          {index + 1} / {total} &nbsp;•&nbsp; {selected.size} selected
+          {currentIndex + 1} / {totalImages} &nbsp;•&nbsp;{" "}
+          {selectedImagePaths.size} selected
         </div>
 
         <div className={classes.controls}>

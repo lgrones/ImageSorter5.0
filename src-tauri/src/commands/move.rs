@@ -23,7 +23,7 @@ impl MoveFiles {
 }
 
 impl Command for MoveFiles {
-    fn execute(&self) {
+    fn execute(&self) -> Result<(), io::Error> {
         for file in &self.files {
             let original_path = PathBuf::from(file);
 
@@ -41,7 +41,7 @@ impl Command for MoveFiles {
                     fs::copy(&original_path, &destination_path).unwrap();
                     fs::remove_file(&original_path).unwrap();
                 } else {
-                    panic!("Error moving file: {}", e);
+                    return Err(io::Error::new(io::ErrorKind::Other, "Error moving files"));
                 }
             }
 
@@ -50,9 +50,11 @@ impl Command for MoveFiles {
                 .unwrap()
                 .push((original_path, destination_path));
         }
+
+        Ok(())
     }
 
-    fn rollback(&self) -> Vec<String> {
+    fn rollback(&self) -> Result<Vec<String>, io::Error> {
         let mut moved = self.moved_files.lock().unwrap();
         let mut rolled_back = vec![];
 
@@ -68,15 +70,15 @@ impl Command for MoveFiles {
                     fs::copy(&destination_path, &original_path).unwrap();
                     fs::remove_file(&destination_path).unwrap();
                 } else {
-                    panic!("Error rolling back file: {}", e);
+                    return Err(io::Error::new(io::ErrorKind::Other, "Error moving files"));
                 }
             }
 
-            rolled_back.push(original_path.to_str().unwrap().to_string())
+            rolled_back.push(original_path.to_string_lossy().to_string())
         }
 
         moved.clear();
 
-        rolled_back
+        Ok(rolled_back)
     }
 }

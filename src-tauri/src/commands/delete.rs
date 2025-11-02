@@ -1,5 +1,6 @@
 use std::{
     collections::HashSet,
+    io,
     path::PathBuf,
     sync::{Arc, Mutex},
 };
@@ -27,21 +28,28 @@ impl DeleteFiles {
 }
 
 impl Command for DeleteFiles {
-    fn execute(&self) {
-        if let Ok(_) = delete_all(&self.files) {
-            if let Ok(trash_items) = list() {
-                let mut deleted_files = self.deleted_files.lock().unwrap();
+    fn execute(&self) -> Result<(), io::Error> {
+        if let Err(_) = delete_all(&self.files) {
+            return Err(io::Error::new(io::ErrorKind::Other, "Error deleting files"));
+        }
 
-                for trash_item in trash_items {
-                    if self.files.contains(&trash_item.original_path()) {
-                        deleted_files.push(trash_item);
-                    }
-                }
+        let trash_items = match list() {
+            Ok(x) => x,
+            Err(_) => return Err(io::Error::new(io::ErrorKind::Other, "Error deleting files")),
+        };
+
+        let mut deleted_files = self.deleted_files.lock().unwrap();
+
+        for trash_item in trash_items {
+            if self.files.contains(&trash_item.original_path()) {
+                deleted_files.push(trash_item);
             }
         }
+
+        Ok(())
     }
 
-    fn rollback(&self) -> Vec<String> {
+    fn rollback(&self) -> Result<Vec<String>, io::Error> {
         let mut trash_items = self.deleted_files.lock().unwrap().clone();
         let mut errored_items = HashSet::new();
 
@@ -55,19 +63,24 @@ impl Command for DeleteFiles {
                     trash_items = remaining_items;
                     errored_items.insert(path);
                 }
-                Err(_) => break,
+                Err(_) => {
+                    return Err(io::Error::new(
+                        io::ErrorKind::Other,
+                        "Error restoring files",
+                    ))
+                }
                 Ok(_) => break,
             }
         }
 
-        return self
+        return Ok(self
             .deleted_files
             .lock()
             .unwrap()
             .clone()
             .into_iter()
             .filter(|item| !errored_items.contains(&item.original_path()))
-            .map(|item| item.original_path().to_str().unwrap().to_string())
-            .collect();
+            .map(|item| item.original_path().to_string_lossy().to_string())
+            .collect());
     }
 }

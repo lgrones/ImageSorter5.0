@@ -1,39 +1,24 @@
-import { useState } from "react";
+import { useFuzzySearchList } from "@nozbe/microfuzz/react";
+import { useCallback, useState } from "react";
 import { useImageSorter } from "../../contexts/imageSorterContext";
 import { PathSelector } from "../pathSelector/pathSelector";
+import { FolderList } from "./folderList/folderList";
 import classes from "./folders.module.css";
-import { FolderTree } from "./folderTree/folderTree";
 import { Target } from "../../contexts/imageSorterReducer";
 
-const fuzzyMatch = (query: string, targets: Target[]) => {
-  query = query.toLowerCase();
-
-  return targets
-    .map((target) => {
-      const path = target.path.toLowerCase();
-      const name = target.name.toLowerCase();
-      let index = 0;
-      let score = name.includes(query) ? 200 : 0;
-
-      for (let i = 0; i < path.length && index < query.length; i++) {
-        if (path[i] === query[index]) {
-          score += 2;
-          index++;
-        } else if (query.includes(path[i])) {
-          score += 0.5;
-        }
-      }
-
-      return { target, score };
-    })
-    .filter((x) => x.score > 0)
-    .sort((a, b) => b.score - a.score)
-    .map((x) => x.target);
-};
+String.prototype.toLocaleLowerCase = String.prototype.toLowerCase;
 
 export const Folders = () => {
-  const { targets, targetFolderPath, setTargetFolderPath } = useImageSorter();
   const [query, setQuery] = useState("");
+  const { targetFolders, targetFolderPath, setTargetFolderPath } =
+    useImageSorter();
+
+  const targets = useFuzzySearchList({
+    list: targetFolders,
+    queryText: query,
+    getText: useCallback((item: Target) => [item.name], []),
+    mapResultItem: useCallback(({ item }: { item: Target }) => item, []),
+  });
 
   return (
     <div className={classes.container}>
@@ -46,7 +31,7 @@ export const Folders = () => {
         className={classes.search}
       />
 
-      <FolderTree targets={fuzzyMatch(query, targets)} />
+      <FolderList targets={targets} />
 
       <PathSelector
         title="Select a target folder"

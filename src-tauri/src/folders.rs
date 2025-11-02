@@ -9,7 +9,7 @@ pub struct Target {
 }
 
 fn visit_folders(dir: &Path, targets: &mut Vec<Target>) -> io::Result<()> {
-    if !dir.is_dir() {
+    if dir.is_file() {
         return Ok(());
     }
 
@@ -38,9 +38,7 @@ fn visit_folders(dir: &Path, targets: &mut Vec<Target>) -> io::Result<()> {
 pub fn read_targets_from_folder(folder: String) -> Vec<Target> {
     let mut targets = Vec::new();
 
-    if let Err(_) = visit_folders(Path::new(&folder), &mut targets) {
-        return Vec::new();
-    }
+    visit_folders(Path::new(&folder), &mut targets).unwrap_or_default();
 
     targets.sort_by_key(|t| t.name.clone());
     targets

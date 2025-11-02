@@ -12,13 +12,19 @@ impl History {
     }
 
     pub fn execute(&mut self, command: Arc<dyn Command>) {
-        command.execute();
+        let result = command.execute();
         self.commands.push(command);
+
+        if let Err(_) = result {
+            self.rollback();
+        }
     }
 
     pub fn rollback(&mut self) -> Vec<String> {
         if let Some(command) = self.commands.pop() {
-            return command.rollback();
+            if let Ok(paths) = command.rollback() {
+                return paths;
+            }
         }
 
         vec![]

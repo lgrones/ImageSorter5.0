@@ -6,90 +6,92 @@ export interface Target {
 }
 
 interface State {
-  initialized: boolean;
-  index: number;
-  selected: Set<number>;
-  paths: string[];
-  targets: Target[];
+  currentIndex: number;
+  selectedImagePaths: Set<string>;
+  imagePaths: string[];
+  targetFolders: Target[];
+  imageFolderPath: string;
+  targetFolderPath: string;
 }
 
 export type Action =
-  | { type: "reset" }
-  | { type: "setPaths"; payload: string[] }
-  | { type: "setTargets"; payload: Target[] }
-  | { type: "toggleSelect" }
-  | { type: "next" }
-  | { type: "prev" }
-  | { type: "remove"; payload: string[] }
-  | { type: "add"; payload: string[] };
-
-export const initialState: State = {
-  initialized: false,
-  index: 0,
-  selected: new Set(),
-  paths: [],
-  targets: [],
-};
+  | {
+      type: "setImagePaths";
+      payload: { imagePaths: string[]; imageFolderPath: string };
+    }
+  | {
+      type: "setTargetFolders";
+      payload: { targetFolders: Target[]; targetFolderPath: string };
+    }
+  | { type: "removeImages"; payload: string[] }
+  | { type: "addImages"; payload: string[] }
+  | { type: "toggleImageSelect" }
+  | { type: "nextImage" }
+  | { type: "prevImage" };
 
 const reducer = (state: State, action: Action): State => {
   switch (action.type) {
-    case "reset":
-      return { ...state, initialized: false, index: 0, selected: new Set() };
-
-    case "setPaths":
+    case "setImagePaths":
       return {
         ...state,
-        paths: action.payload,
-        initialized: true,
+        ...action.payload,
+        currentIndex: 0,
+        selectedImagePaths: new Set(),
       };
 
-    case "setTargets":
+    case "setTargetFolders":
       return {
         ...state,
-        targets: action.payload,
-        initialized: true,
+        ...action.payload,
+        currentIndex: 0,
+        selectedImagePaths: new Set(),
       };
 
-    case "remove":
+    case "removeImages":
       return {
         ...state,
-        paths: state.paths.filter((x) => !action.payload.includes(x)),
-        index: 0,
-        selected: new Set(),
+        imagePaths: state.imagePaths.filter((x) => !action.payload.includes(x)),
+        currentIndex: 0,
+        selectedImagePaths: new Set(),
       };
 
-    case "add":
+    case "addImages":
       return {
         ...state,
-        paths: [...state.paths, ...action.payload],
-        index: 0,
-        selected: new Set(),
+        imagePaths: [...state.imagePaths, ...action.payload],
+        currentIndex: 0,
+        selectedImagePaths: new Set(),
       };
 
-    case "toggleSelect": {
-      const newSet = new Set(state.selected);
+    case "toggleImageSelect": {
+      const newSet = new Set(state.selectedImagePaths);
 
-      newSet.has(state.index)
-        ? newSet.delete(state.index)
-        : newSet.add(state.index);
+      const currentImagePath = state.imagePaths[state.currentIndex];
 
-      return { ...state, selected: newSet };
+      newSet.has(currentImagePath)
+        ? newSet.delete(currentImagePath)
+        : newSet.add(currentImagePath);
+
+      return { ...state, selectedImagePaths: newSet };
     }
 
-    case "next":
+    case "nextImage":
       return {
         ...state,
-        index:
-          state.paths.length === 0 ? 0 : (state.index + 1) % state.paths.length,
+        currentIndex:
+          state.imagePaths.length === 0
+            ? 0
+            : (state.currentIndex + 1) % state.imagePaths.length,
       };
 
-    case "prev":
+    case "prevImage":
       return {
         ...state,
-        index:
-          state.paths.length === 0
+        currentIndex:
+          state.imagePaths.length === 0
             ? 0
-            : (state.index - 1 + state.paths.length) % state.paths.length,
+            : (state.currentIndex - 1 + state.imagePaths.length) %
+              state.imagePaths.length,
       };
 
     default:
@@ -97,4 +99,17 @@ const reducer = (state: State, action: Action): State => {
   }
 };
 
-export const useImageSorterState = () => useReducer(reducer, initialState);
+export const useImageSorterState = (defaults: {
+  imageFolderPath: string;
+  targetFolderPath: string;
+  imagePaths: string[];
+  targetFolders: Target[];
+}) =>
+  useReducer(reducer, {
+    currentIndex: 0,
+    selectedImagePaths: new Set<string>(),
+    imagePaths: defaults.imagePaths,
+    targetFolders: defaults.targetFolders,
+    imageFolderPath: defaults.imageFolderPath,
+    targetFolderPath: defaults.targetFolderPath,
+  });

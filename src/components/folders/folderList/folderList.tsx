@@ -1,18 +1,22 @@
 import { memo, useDeferredValue } from "react";
 import { Target } from "../../../contexts/imageSorterReducer";
-import classes from "./folderTree.module.css";
+import classes from "./folderList.module.css";
 import { useImageSorter } from "../../../contexts/imageSorterContext";
 
-interface FolderTreeProps {
+interface FolderListProps {
   targets: Target[];
 }
 
-export const FolderTree = ({ targets }: FolderTreeProps) => {
+export const FolderList = ({ targets }: FolderListProps) => {
   const deferredTargets = useDeferredValue(targets);
 
   return (
     <div className={classes.list} id="folders">
-      <Folders targets={deferredTargets} />
+      {deferredTargets.length ? (
+        <Folders targets={deferredTargets} />
+      ) : (
+        <span className={classes.empty}>No folders found</span>
+      )}
     </div>
   );
 };
@@ -22,15 +26,17 @@ interface FoldersProps {
 }
 
 const Folders = memo(({ targets }: FoldersProps) => {
-  const { move } = useImageSorter();
+  const { moveImages } = useImageSorter();
 
   return targets.map((x) => (
-    <button key={x.path} className={classes.item} onClick={() => move(x.path)}>
+    <button
+      key={x.path}
+      className={classes.item}
+      onClick={() => moveImages(x.path)}
+    >
       <span>{x.name}</span>
       <span dir="rtl" title={x.path}>
-        {x.path
-          .substring(0, x.path.length - 1)
-          .substring(0, x.path.lastIndexOf("/"))}
+        {x.path.replace(new RegExp(`${x.name}/*$`), "")}
       </span>
     </button>
   ));

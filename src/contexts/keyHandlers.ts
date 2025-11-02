@@ -1,5 +1,5 @@
 import { Action } from "./imageSorterReducer";
-import { deleteFiles, undo } from "./operations";
+import { deleteFiles, undo } from "../operations/operations";
 
 export const handleGlobalKeys = (e: KeyboardEvent) => {
   if (e.ctrlKey || e.metaKey || e.altKey) return false;
@@ -49,7 +49,7 @@ export const handleControlKeys = async (
     e.preventDefault();
 
     const paths = await undo();
-    if (paths.length) dispatch({ type: "add", payload: paths });
+    if (paths.length) dispatch({ type: "addImages", payload: paths });
 
     return true;
   }
@@ -58,18 +58,18 @@ export const handleControlKeys = async (
 
   switch (e.key) {
     case "ArrowLeft":
-      dispatch({ type: "prev" });
+      dispatch({ type: "prevImage" });
       return true;
     case "ArrowRight":
-      dispatch({ type: "next" });
+      dispatch({ type: "nextImage" });
       return true;
     case " ":
       e.preventDefault();
-      dispatch({ type: "toggleSelect" });
+      dispatch({ type: "toggleImageSelect" });
       return true;
     case "Delete":
       deleteFiles(paths);
-      dispatch({ type: "remove", payload: paths });
+      dispatch({ type: "removeImages", payload: paths });
       return true;
   }
 
